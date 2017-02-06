@@ -10,6 +10,9 @@ const string driver = "https://raw.githubusercontent.com/ghostgzt/ExView/master/
 const string savepath = "D:\\ExView\\";
 const string featurepath = "features\\";
 const string pluginspath = "plugins\\";
+const bool decode = true; //decode chinese characters
+const bool debug = false;
+int debugcount = 2;
 
 var quote = new Regex("\\\".{0,}?\\\"", System.Text.RegularExpressions.RegexOptions.Compiled); // json quote content parser
 var bracket = new Regex("{.+?}", System.Text.RegularExpressions.RegexOptions.Compiled); // json bracket content parser
@@ -55,13 +58,13 @@ foreach (Match pluginjson in pluginjsons)
     sb.Clear();
     for (int i = 0; i < word.Length / 2; i++)
         sb.Append((char)Convert.ToByte(string.Concat(word[2 * i], word[2 * i + 1]), 16));
-
+    string result = decode ? Regex.Replace(sb.ToString(), "\\\\u[0-9|abcdef]{4}", (match) => Regex.Unescape(match.Value)) : sb.ToString();
+    
     //write to file
-    Console.WriteLine("\tSaving...");
-    if (isfeature)
-        File.WriteAllText(savepath + featurepath + name + ".js", sb.ToString());
-    else
-        File.WriteAllText(savepath + pluginspath + name + ".js", sb.ToString());
+    string path = savepath + (isfeature ? featurepath : pluginspath) + name + ".js";
+    Console.WriteLine($"\tSaving to {path} ...");
+    File.WriteAllText(path, result);
     
     Console.WriteLine("\tSuccess!");
+    if (debug) if (debugcount-- <= 0) break; //fetch for only one time for debugging
 }
