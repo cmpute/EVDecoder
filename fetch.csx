@@ -14,9 +14,24 @@ const bool decode = true; //decode chinese characters
 const bool debug = false;
 int debugcount = 2;
 
+public class GZipWebClient : WebClient
+{
+    public GZipWebClient():base()
+    {
+        Encoding = Encoding.UTF8;
+        Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate");
+    }
+    protected override WebRequest GetWebRequest(Uri address)
+    {
+        HttpWebRequest request = (HttpWebRequest)base.GetWebRequest(address);
+        request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+        return request;
+    }
+}
+
 var quote = new Regex("\\\".{0,}?\\\"", System.Text.RegularExpressions.RegexOptions.Compiled); // json quote content parser
 var bracket = new Regex("{.+?}", System.Text.RegularExpressions.RegexOptions.Compiled); // json bracket content parser
-WebClient client = new WebClient() { Encoding = Encoding.UTF8 };
+var client = new GZipWebClient();
 StringBuilder sb = new StringBuilder();
 Directory.CreateDirectory(savepath);
 Directory.CreateDirectory(savepath + featurepath);
@@ -49,8 +64,8 @@ foreach (Match pluginjson in pluginjsons)
     Console.WriteLine("\tConcating...");
     sb.Clear();
     var matches = quote.Matches(words);
-    sb.Append(matches[2].Value, 2, matches[2].Value.Length - 3); // no idea about the middle content
-    sb.Append(matches[0].Value, 2, matches[0].Value.Length - 3);
+    sb.Append(matches[2].Value, 2, matches[2].Value.Length - 3); // remove quote and 'w'
+    sb.Append(matches[0].Value, 2, matches[0].Value.Length - 3); // no idea about the middle content
     string word = sb.ToString();
 
     //hex to char
