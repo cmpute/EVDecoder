@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 //initialize
 Console.WriteLine("Initializing...");
-const string driver = "https://raw.githubusercontent.com/ghostgzt/ExView/master/init.jsonp"; // list address
+const string driver = "https://raw.githubusercontent.com/ghostgzt/ExView/master/driver.jsonp"; // list address
 const string savepath = "D:\\ExView\\";
 const string featurepath = "features\\";
 const string pluginspath = "plugins\\";
@@ -41,6 +41,7 @@ Directory.CreateDirectory(savepath + pluginspath);
 //parse list
 Console.WriteLine("Fetching Plugin List...");
 string listtext = client.DownloadString(driver);
+listtext = listtext.Substring(listtext.IndexOf("else{"));
 var start = listtext.IndexOf('[');
 var end = listtext.IndexOf(']', start);
 var listjson = listtext.Substring(start + 1, end - start - 1);
@@ -54,7 +55,7 @@ foreach (Match pluginjson in pluginjsons)
     var contents = quote.Matches(pluginjson.Value);
     string name = contents[1].Value.Trim(new[] { '"' });
     Console.WriteLine("Parsing " + name + ":");
-    bool isfeature = contents[2].Value == "\"¹¦ÄÜ\"";
+    bool isfeature = contents[2].Value == "\"åŠŸèƒ½\"";
     if (isfeature) Console.WriteLine("\tIt is a feature.");
     string addr = contents[contents.Count - 1].Value.Trim(new[] { '"' });
     Console.WriteLine($"\tDownloading from {contents[contents.Count - 1].Value}...");
